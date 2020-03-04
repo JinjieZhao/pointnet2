@@ -9,4 +9,4 @@ protobuf==3.2.0
 backports.weakref==1.0rc1
 markdown<2.7
 opencv-python<3.4
-h5py
+h5py<2.8
