@@ -10,3 +10,6 @@ backports.weakref==1.0rc1
 markdown<2.7
 opencv-python<3.4
 h5py<2.8
+
+grpcio<1.28
+grpcio-tools<1.28
