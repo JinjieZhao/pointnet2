@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import time
+
 import os
 import numpy as np
 import grpc
@@ -26,10 +28,12 @@ def run():
         stub = pointnet2_pb2_grpc.PointStub(channel)
         cnt = 100
 
+        start = time.time()
         replies = stub.Segment(get_data(cnt))
         for reply in replies:
             data = converter.point_reply_to_ndarray(reply)
-            print(data.shape)
+        end = time.time()
+        print(end - start, 's')
 
 
 if __name__ == '__main__':
