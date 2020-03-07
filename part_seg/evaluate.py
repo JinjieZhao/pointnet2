@@ -22,7 +22,7 @@ parser.add_argument('--model', default='pointnet2_part_seg', help='Model name [d
 parser.add_argument('--model_path', default='log/model.ckpt', help='model checkpoint file path [default: log/model.ckpt]')
 parser.add_argument('--log_dir', default='log_eval', help='Log dir [default: log_eval]')
 parser.add_argument('--num_point', type=int, default=2048, help='Point Number [default: 2048]')
-parser.add_argument('--batch_size', type=int, default=32, help='Batch Size during training [default: 32]')
+parser.add_argument('--batch_size', type=int, default=1, help='Batch Size during training [default: 32]')
 FLAGS = parser.parse_args()
 
 
@@ -80,7 +80,8 @@ def evaluate():
                'pred': pred,
                'loss': loss}
 
-        eval_one_epoch(sess, ops)
+        # eval_one_epoch(sess, ops)
+        return sess, ops
 
 def get_batch(dataset, idxs, start_idx, end_idx):
     bsize = end_idx-start_idx
@@ -92,6 +93,45 @@ def get_batch(dataset, idxs, start_idx, end_idx):
         batch_data[i,:,3:6] = normal
         batch_label[i,:] = seg
     return batch_data, batch_label
+
+def pc_normalize(pc):
+    centroid = np.mean(pc, axis=0)
+    pc = pc - centroid
+    m = np.max(np.sqrt(np.sum(pc**2, axis=1)))
+    pc = pc / m
+    return pc
+
+def eval_one(sess, ops, data):
+    is_training = False
+    batch_data = np.zeros((1, NUM_POINT, 6))
+    batch_label = np.zeros((1, NUM_POINT), dtype=np.int32)
+    ps = data[:, 0:3]
+    ps = pc_normalize(ps)
+    normal = data[:, 3:6]
+    seg = data[:, -1].astype(np.int32)
+    batch_data[0, :, 0:3] = ps
+    batch_data[0, :, 3:6] = normal
+    batch_label[0, :] = seg
+
+    feed_dict = {ops['pointclouds_pl']: batch_data,
+                 ops['labels_pl']: batch_label,
+                 ops['is_training_pl']: is_training}
+
+    loss_val, pred_val = sess.run([ops['loss'], ops['pred']], feed_dict=feed_dict)
+    cur_pred_val_logits = pred_val
+    cur_pred_val = np.zeros((1, NUM_POINT)).astype(np.int32)
+
+    seg_classes = TEST_DATASET.seg_classes
+    seg_label_to_cat = {}  # {0:Airplane, 1:Airplane, ...49:Table}
+    for cat in seg_classes.keys():
+        for label in seg_classes[cat]:
+            seg_label_to_cat[label] = cat
+
+    cat = seg_label_to_cat[batch_label[0, 0]]
+    logits = cur_pred_val_logits[0, :, :]
+    cur_pred_val[0, :] = np.argmax(logits[:, seg_classes[cat]], 1) + seg_classes[cat][0]
+
+    return cur_pred_val
 
 def eval_one_epoch(sess, ops):
     """ ops: dict mapping from string to tf ops """
@@ -191,6 +231,33 @@ def eval_one_epoch(sess, ops):
     log_string('eval mean mIoU (all shapes): %f' % (np.mean(all_shape_ious)))
          
 if __name__ == "__main__":
-    log_string('pid: %s'%(str(os.getpid())))
-    evaluate()
-    LOG_FOUT.close()
+    # log_string('pid: %s'%(str(os.getpid())))
+    # evaluate()
+    # LOG_FOUT.close()
+    s, o = evaluate()
+    import time
+    cnt = 100
+    data = TEST_DATASET.get_data(0)
+    start = time.time()
+    for _ in range(cnt):
+        p = eval_one(s, o, data)
+    end = time.time()
+
+    print end - start
+
+    datas = [TEST_DATASET.get_data(i) for i in np.random.choice(1000, cnt)]
+    start = time.time()
+    for data in datas:
+        p = eval_one(s, o, data)
+    end = time.time()
+
+    print end - start
+
+    datas = [TEST_DATASET.get_data(i) for i in np.random.choice(10, cnt)]
+    start = time.time()
+    for data in datas:
+        p = eval_one(s, o, data)
+    end = time.time()
+
+    print end - start
+
