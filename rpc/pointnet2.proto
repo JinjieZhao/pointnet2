@@ -1,0 +1,14 @@
+syntax = "proto3";
+package pointnet2;
+
+service Point {
+    rpc Segment (stream PointRequest) returns (stream PointReply) {}
+}
+
+message PointRequest {
+    bytes ndarray = 1;
+}
+
+message PointReply {
+    bytes ndarray = 1;
+}
