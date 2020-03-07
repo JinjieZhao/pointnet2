@@ -114,6 +114,12 @@ class PartNormalDataset():
     def __len__(self):
         return len(self.datapath)
 
+    def get_data(self, index):
+        data = np.loadtxt(self.datapath[index][1]).astype(np.float32)
+        choice = np.random.choice(data.shape[0], self.npoints, replace=True)
+        data = data[choice, :]
+        return data
+
 
 if __name__ == '__main__':
     d = PartNormalDataset(root = '../data/shapenetcore_partanno_segmentation_benchmark_v0_normal', split='trainval', npoints=3000)
@@ -126,7 +132,7 @@ if __name__ == '__main__':
     print(ps.shape, seg.shape, normal.shape)
     print ps
     print normal
-    
+
     sys.path.append('../utils')
     import show3d_balls
     show3d_balls.showpoints(ps, normal+1, ballradius=8)
