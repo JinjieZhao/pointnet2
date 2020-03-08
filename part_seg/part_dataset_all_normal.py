@@ -121,6 +121,13 @@ class PartNormalDataset():
         return data
 
 
+def list_data(num):
+    dataset = PartNormalDataset(root='../data/shapenetcore_partanno_segmentation_benchmark_v0_normal', npoints=2048,
+                                classification=False,
+                                split='test')
+    return [dataset.get_data(i) for i in np.random.choice(1000, num)]
+
+
 if __name__ == '__main__':
     d = PartNormalDataset(root = '../data/shapenetcore_partanno_segmentation_benchmark_v0_normal', split='trainval', npoints=3000)
     print(len(d))
