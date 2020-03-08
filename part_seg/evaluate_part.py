@@ -229,35 +229,21 @@ def eval_one_epoch(sess, ops):
         log_string('eval mIoU of %s:\t %f'%(cat, shape_ious[cat]))
     log_string('eval mean mIoU: %f' % (mean_shape_ious))
     log_string('eval mean mIoU (all shapes): %f' % (np.mean(all_shape_ious)))
-         
+
+
 if __name__ == "__main__":
     # log_string('pid: %s'%(str(os.getpid())))
     # evaluate()
     # LOG_FOUT.close()
     s, o = evaluate()
     import time
+
     cnt = 100
-    data = TEST_DATASET.get_data(0)
+
+    data_list = part_dataset_all_normal.list_data(cnt)
     start = time.time()
-    for _ in range(cnt):
+    for data in data_list:
         p = eval_one(s, o, data)
     end = time.time()
 
     print end - start
-
-    datas = [TEST_DATASET.get_data(i) for i in np.random.choice(1000, cnt)]
-    start = time.time()
-    for data in datas:
-        p = eval_one(s, o, data)
-    end = time.time()
-
-    print end - start
-
-    datas = [TEST_DATASET.get_data(i) for i in np.random.choice(10, cnt)]
-    start = time.time()
-    for data in datas:
-        p = eval_one(s, o, data)
-    end = time.time()
-
-    print end - start
-
