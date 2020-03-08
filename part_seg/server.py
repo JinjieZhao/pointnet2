@@ -13,6 +13,7 @@ class Server(pointnet2_pb2_grpc.PointServicer):
     def __init__(self):
         s, o = evaluate_part.evaluate()
         self.eval_one = partial(evaluate_part.eval_one, s, o)
+        print("--**-- server initialized --**--")
 
     def Segment(self, request_iterator, context):
         for request in request_iterator:
