@@ -121,11 +121,12 @@ class PartNormalDataset():
         return data
 
 
+import pickle
+
 def list_data(num):
-    dataset = PartNormalDataset(root='../data/shapenetcore_partanno_segmentation_benchmark_v0_normal', npoints=2048,
-                                classification=False,
-                                split='test')
-    return [dataset.get_data(i) for i in np.random.choice(1000, num)]
+    with open("/home/zhaojinjie/PycharmProjects/pointnet2/part_seg/data.pkl") as f:
+        r = pickle.load(f)
+    return r
 
 
 if __name__ == '__main__':
