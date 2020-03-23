@@ -1,18 +1,31 @@
 import json
+import time
 import requests
 import numpy as np
 
+import part_dataset_all_normal
+
+cnt = 100
+dataset = part_dataset_all_normal.list_data(cnt)
+
 
 def segment():
-    url = "http://127.0.0.1:5000/point"
+    url = "http://127.0.0.1:5001/point"
+    s = requests.Session()
 
-    files = {'ndarray': np.random.rand(1, 2048, 7).tolist()}
+    start = time.time()
+    for data in dataset:
+        files = {'ndarray': data.tolist()}
 
-    response = requests.request("GET", url, json=files)
+        response = s.request("GET", url, json=files)
 
-    json_array = json.loads(response.text)['ndarray']
-    print(np.array(json_array).shape)
+        json_array = json.loads(response.text)['ndarray']
+        array = np.array(json_array)
+    end = time.time()
+
+    print end - start
 
 
 if __name__ == '__main__':
-    segment()
+    for _ in range(3):
+        segment()
