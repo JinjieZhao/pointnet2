@@ -23,7 +23,7 @@ def segment():
         array = np.array(json_array)
     end = time.time()
 
-    print end - start
+    print(end - start)
 
 
 if __name__ == '__main__':
