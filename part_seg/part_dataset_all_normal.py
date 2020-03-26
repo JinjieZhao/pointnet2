@@ -123,9 +123,19 @@ class PartNormalDataset():
 
 import pickle
 
+
 def list_data(num):
-    with open("/home/zhaojinjie/PycharmProjects/pointnet2/part_seg/data.pkl") as f:
-        r = pickle.load(f)
+    if not os.path.exists("/home/zhaojinjie/PycharmProjects/pointnet2/part_seg/data.pkl"):
+        dataset = PartNormalDataset(root='../data/shapenetcore_partanno_segmentation_benchmark_v0_normal', npoints=2048,
+                                    classification=False,
+                                    split='test')
+        r = [dataset.get_data(i) for i in np.random.choice(1000, num)]
+        with open("/home/zhaojinjie/PycharmProjects/pointnet2/part_seg/data.pkl", "wb") as fw:
+            pickle.dump(r, fw, protocol=pickle.HIGHEST_PROTOCOL)
+        return r
+
+    with open("/home/zhaojinjie/PycharmProjects/pointnet2/part_seg/data.pkl", "rb") as f:
+        r = pickle.load(f, encoding='latin1')
     return r
 
 
